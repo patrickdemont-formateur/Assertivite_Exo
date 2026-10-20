@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>DESC en couleurs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600..800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --encre:#1B2430;
+    --fond:#EEF1F5;
+    --carte:#FFFFFF;
+    --sourd:#566173;
+    --trait:#D3D9E1;
+    --rouge:#C4402F; --rouge-bg:#FBEAE7;
+    --jaune:#E2A81D; --jaune-bg:#FCF3D9;
+    --vert:#267A4C;  --vert-bg:#E3F2EA;
+    --bleu:#2C6BB3;  --bleu-bg:#E3EDF8;
+    --titre:'Bricolage Grotesque','Avenir Next','Segoe UI',system-ui,sans-serif;
+    --texte:'Atkinson Hyperlegible','Segoe UI',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--fond); color:var(--encre);
+    font:400 17px/1.55 var(--texte);
+  }
+  h1,h2,h3,h4{font-family:var(--titre); line-height:1.15; margin:0}
+  p{margin:0 0 .75em}
+  button{font:inherit; color:inherit; cursor:pointer}
+  :focus-visible{outline:3px solid var(--encre); outline-offset:2px}
+
+  /* En-tête */
+  .top{
+    display:flex; align-items:center; gap:12px;
+    padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;
+    background:var(--carte); border-bottom:1px solid var(--trait);
+  }
+  .marque{display:grid; grid-template-columns:repeat(2,14px); gap:3px}
+  .marque i{display:block; width:14px; height:14px; border-radius:3px}
+  .top .titre{font:800 22px/1 var(--titre); margin:0; letter-spacing:-.01em}
+
+  main{max-width:640px; margin:0 auto; padding:20px 16px calc(96px + env(safe-area-inset-bottom,0px))}
+  .vue[hidden]{display:none}
+  .vue > h2{font-size:28px; font-weight:800; letter-spacing:-.015em; margin-bottom:8px}
+  .lede{color:var(--sourd); max-width:60ch}
+
+  /* Navigation basse */
+  .nav{
+    position:fixed; left:0; right:0; bottom:0; z-index:5;
+    display:grid; grid-template-columns:repeat(4,1fr);
+    background:var(--carte); border-top:1px solid var(--trait);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .nav button{
+    border:0; background:none; padding:14px 4px 12px; min-height:56px;
+    font:700 15px/1.1 var(--texte); color:var(--sourd);
+    border-top:4px solid transparent; margin-top:-1px;
+  }
+  .nav button[aria-current="page"]{color:var(--encre); border-top-color:var(--encre)}
+
+  /* Tuiles de couleur */
+  .tuiles{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:18px 0}
+  .tuile{
+    border:0; border-radius:18px; padding:14px 14px 16px; min-height:116px;
+    text-align:left; color:#fff; background:var(--c);
+    display:flex; flex-direction:column; justify-content:flex-end; gap:2px;
+    transition:opacity .15s;
+  }
+  .tuile.jaune{color:var(--encre)}
+  .tuile .nom{font:800 30px/1 var(--titre); letter-spacing:-.02em}
+  .tuile .sous{font-size:15px}
+  .tuiles.choisi .tuile{opacity:.4}
+  .tuiles.choisi .tuile[aria-pressed="true"]{opacity:1; outline:3px solid var(--encre); outline-offset:3px}
+
+  /* Cartes */
+  .carte{
+    background:var(--carte); border-radius:10px; padding:18px 18px 8px;
+    border-left:8px solid var(--c, var(--encre)); margin-bottom:14px;
+  }
+  .carte h3{font-size:24px; font-weight:800; margin-bottom:10px}
+  .carte h4{font-size:17px; font-weight:700; margin:16px 0 4px}
+  .carte blockquote{
+    margin:6px 0 12px; padding:8px 12px; background:var(--cbg, var(--fond));
+    border-radius:6px; font-style:italic;
+  }
+  .etapes{list-style:none; display:flex; flex-wrap:wrap; gap:6px; padding:0; margin:6px 0 10px}
+  .etapes li{
+    padding:4px 10px; border-radius:999px; border:1.5px solid var(--trait);
+    font-size:15px; color:var(--sourd);
+  }
+  .etapes li.piege{background:var(--c); border-color:var(--c); color:#fff; font-weight:700}
+  .etapes li.piege.jaune{color:var(--encre)}
+  .carte ul{padding-left:1.15em; margin:4px 0 12px}
+  .carte li{margin-bottom:2px}
+
+  .champ{margin-top:18px}
+  .champ label{display:block; font-weight:700; margin-bottom:6px}
+  textarea{
+    width:100%; min-height:92px; padding:10px 12px; border:1.5px solid var(--trait);
+    border-radius:8px; font:inherit; background:var(--carte); color:inherit; resize:vertical;
+  }
+  .aide{font-size:15px; color:var(--sourd); margin-top:6px}
+
+  /* Boutons */
+  .btns{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0}
+  .btn{
+    border:2px solid var(--encre); background:var(--encre); color:#fff;
+    padding:12px 20px; border-radius:10px; font-weight:700; min-height:48px;
+  }
+  .btn.second{background:transparent; color:var(--encre)}
+  .btn[disabled]{opacity:.4; cursor:not-allowed}
+
+  /* Rôles */
+  .roles{background:var(--carte); border-radius:10px; padding:14px 18px; margin:14px 0}
+  .roles dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:6px 14px}
+  .roles dt{font-weight:700}
+  .roles dd{margin:0; color:var(--sourd)}
+
+  .vide{border:2px dashed var(--trait); border-radius:10px; padding:18px; color:var(--sourd)}
+
+  .situation{background:var(--encre); color:#fff; border-radius:10px; padding:16px 18px; margin-bottom:14px}
+  .situation h3{font-size:15px; font-weight:600; opacity:.75; margin-bottom:6px}
+  .situation p{font:700 21px/1.3 var(--titre); margin:0}
+
+  .recepteur{--cbg:var(--fond)}
+  .recepteur h3 small{font:400 17px var(--texte); color:var(--sourd); margin-left:4px}
+
+  /* Minuteur */
+  .minuteur{background:var(--carte); border-radius:10px; padding:16px 18px; margin-top:14px}
+  .minuteur .phase{font-weight:700; margin:0}
+  .minuteur .temps{font:800 64px/1.05 var(--titre); font-variant-numeric:tabular-nums; margin:2px 0 8px}
+  .barre{height:8px; background:var(--fond); border-radius:99px; overflow:hidden}
+  .barre span{display:block; height:100%; width:0; background:var(--encre); transition:width .3s linear}
+  .minuteur.fin .temps{color:var(--sourd)}
+
+  /* Grille d’observation */
+  .couleur-jouee{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 4px}
+  .puce{
+    border:2px solid var(--c); background:transparent; color:var(--encre);
+    border-radius:999px; padding:6px 14px; font-weight:700; min-height:40px;
+  }
+  .puce[aria-pressed="true"]{background:var(--c); color:#fff}
+  .puce.jaune[aria-pressed="true"]{color:var(--encre)}
+
+  .critere{border:0; padding:0; margin:0 0 14px}
+  .critere legend{padding:0; font-weight:700; margin-bottom:6px}
+  .segments{display:grid; grid-template-columns:repeat(3,1fr); gap:6px}
+  .segments input{position:absolute; opacity:0; pointer-events:none}
+  .segments label{
+    text-align:center; padding:10px 4px; border:1.5px solid var(--trait);
+    background:var(--carte); border-radius:8px; font-size:16px; min-height:46px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .segments input:checked + label{background:var(--encre); border-color:var(--encre); color:#fff; font-weight:700}
+  .segments input:focus-visible + label{outline:3px solid var(--encre); outline-offset:2px}
+
+  .radar{background:var(--carte); border-radius:10px; padding:8px; margin:18px 0 10px}
+  .radar svg{display:block; width:100%; height:auto}
+  .bilan{font-weight:700}
+
+  /* Mémo */
+  .etape-desc{display:grid; grid-template-columns:auto 1fr; gap:2px 14px; background:var(--carte); border-radius:10px; padding:14px 18px; margin-bottom:10px}
+  .etape-desc .pastille{
+    grid-row:span 3; align-self:start; width:36px; height:36px; border-radius:50%;
+    background:var(--encre); color:#fff; display:grid; place-items:center; font:800 18px var(--titre);
+  }
+  .etape-desc h3{font-size:19px}
+  .etape-desc p{margin:0}
+  .etape-desc .ex{font-style:italic; color:var(--sourd)}
+  details{background:var(--carte); border-radius:10px; margin-bottom:8px; border-left:8px solid var(--c, var(--encre))}
+  summary{padding:14px 16px; font-weight:700; cursor:pointer; min-height:48px}
+  details > div{padding:0 16px 12px}
+  details dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:6px 14px}
+  details dt{font-weight:700}
+  details dd{margin:0}
+  .memo-titre{font-size:22px; font-weight:800; margin:26px 0 10px}
+
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+  @media (min-width:560px){ .tuile{min-height:132px} }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="marque" aria-hidden="true">
+    <i style="background:var(--rouge)"></i><i style="background:var(--jaune)"></i>
+    <i style="background:var(--bleu)"></i><i style="background:var(--vert)"></i>
+  </div>
+  <p class="titre">DESC en couleurs</p>
+</header>
+
+<main>
+
+  <!-- 1. Ma pente -->
+  <section class="vue" id="v-pente" aria-labelledby="t-pente">
+    <h2 id="t-pente">Où est-ce que je glisse sous tension ?</h2>
+    <p class="lede">Une couleur est une préférence, pas une étiquette : chacun de nous a les quatre. Choisissez celle qui vous ressemble le plus au travail.</p>
+
+    <div class="tuiles" id="tuiles"></div>
+
+    <div id="carte-pente"></div>
+
+    <div class="champ" id="champ-note" hidden>
+      <label for="note">Sous tension, j’ai tendance à…</label>
+      <textarea id="note" placeholder="Une phrase, avec vos mots."></textarea>
+      <p class="aide">Rien n’est enregistré : ce texte reste sur votre téléphone et disparaît si vous fermez la page.</p>
+    </div>
+  </section>
+
+  <!-- 2. Tirage -->
+  <section class="vue" id="v-tirage" aria-labelledby="t-tirage" hidden>
+    <h2 id="t-tirage">Tirage du round</h2>
+    <p class="lede">Un seul téléphone par groupe suffit. L’émetteur découvre la situation, le récepteur sa couleur.</p>
+
+    <div class="roles">
+      <dl>
+        <dt>Émetteur</dt><dd>dit son DESC en adaptant la forme à la couleur en face</dd>
+        <dt>Récepteur</dt><dd>joue la couleur tirée, avec ses réactions types</dd>
+        <dt>Observateur</dt><dd>remplit l’onglet « Observer »</dd>
+      </dl>
+    </div>
+
+    <div class="btns">
+      <button class="btn" id="btn-tirer">Nouveau tirage</button>
+      <button class="btn second" id="btn-couleur" disabled>Changer la couleur</button>
+    </div>
+
+    <div id="resultat">
+      <div class="vide">Appuyez sur « Nouveau tirage » pour découvrir la situation et la couleur du récepteur.</div>
+    </div>
+
+    <div class="minuteur" id="minuteur">
+      <p class="phase" id="phase" aria-live="polite">Jeu de rôle</p>
+      <p class="temps" id="temps">4:00</p>
+      <div class="barre" aria-hidden="true"><span id="progres"></span></div>
+      <div class="btns">
+        <button class="btn" id="btn-depart">Démarrer</button>
+        <button class="btn second" id="btn-reset">Recommencer</button>
+      </div>
+      <p class="aide">Trois temps s’enchaînent : jeu de rôle 4 min, retour à trois voix 2 min, changement de rôles 1 min. Un signal sonore et une vibration marquent chaque fin de temps.</p>
+    </div>
+  </section>
+
+  <!-- 3. Observer -->
+  <section class="vue" id="v-observer" aria-labelledby="t-observer" hidden>
+    <h2 id="t-observer">Grille d’observation</h2>
+    <p class="lede">Observez sans commenter pendant le jeu de rôle. Remplissez la grille, puis montrez le graphique au retour à trois voix.</p>
+
+    <p style="margin:14px 0 0; font-weight:700">Couleur jouée par le récepteur</p>
+    <div class="couleur-jouee" id="couleur-jouee"></div>
+
+    <form id="grille" onsubmit="return false"></form>
+
+    <div class="radar" id="radar" aria-hidden="true"></div>
+    <p class="bilan" id="bilan" aria-live="polite"></p>
+    <div class="btns"><button class="btn second" id="btn-grille">Nouvelle grille</button></div>
+  </section>
+
+  <!-- 4. Mémo -->
+  <section class="vue" id="v-memo" aria-labelledby="t-memo" hidden>
+    <h2 id="t-memo">Le DESC en quatre temps</h2>
+    <p class="lede">Exemple : un collègue transmet ses dossiers trop tard.</p>
+    <div id="memo-desc" style="margin-top:14px"></div>
+
+    <h2 class="memo-titre">Parler à chaque couleur</h2>
+    <p class="lede">La structure ne change pas, c’est la forme de chaque temps qui s’ajuste.</p>
+    <div id="memo-couleurs" style="margin-top:12px"></div>
+
+    <h2 class="memo-titre">Les quatre postures</h2>
+    <div id="memo-postures"></div>
+  </section>
+
+</main>
+
+<nav class="nav" aria-label="Sections">
+  <button data-vue="pente" aria-current="page">Ma pente</button>
+  <button data-vue="tirage">Tirage</button>
+  <button data-vue="observer">Observer</button>
+  <button data-vue="memo">Mémo</button>
+</nav>
+
+<script>
+"use strict";
+
+/* ---------- Typographie française : espaces insécables ---------- */
+const NB = "\u00a0";
+const fr = s => s.replace(/ ([:;?!»])/g, NB + "$1").replace(/« /g, "«" + NB);
+function nb(racine){
+  const w = document.createTreeWalker(racine, NodeFilter.SHOW_TEXT);
+  let n; while ((n = w.nextNode())) n.nodeValue = fr(n.nodeValue);
+}
+
+/* ---------- Contenus ---------- */
+const ORDRE = ["rouge","jaune","vert","bleu"];
+const ETAPES = ["Décrire","Exprimer","Spécifier","Conséquences"];
+
+const COUL = {
+  rouge:{
+    nom:"Rouge", trait:"dominance", hex:"var(--rouge)", bg:"var(--rouge-bg)",
+    pente:"Vers l’agressivité : la demande devient un ordre, l’autre un obstacle.",
+    phrase:"« Fais-le, on n’a pas le temps d’en discuter. »",
+    force:"Vous dites les choses nettement et vous décidez vite. Cette clarté est une vraie ressource assertive.",
+    piege:{i:1, t:"Vous passez des faits directement à l’ordre. Le ressenti en « je » disparaît, et la demande sonne comme une pression."},
+    ajuster:"Ajoutez une phrase en « je » avant la demande, puis laissez une vraie place à la réponse.",
+    attend:["Du bref : un fait, une demande","Les enjeux en résultats ou en délais","Une décision possible tout de suite"],
+    reactions:["« Va à l’essentiel. »","« Et concrètement, tu veux quoi ? »","« Ça m’apporte quoi, ce que tu me demandes ? »"],
+    adapt:["Un seul fait, en une phrase.","Court, centré sur l’effet sur le résultat.","Une demande nette, avec une échéance.","Le gain en résultats ou en temps."]
+  },
+  jaune:{
+    nom:"Jaune", trait:"influence", hex:"var(--jaune)", bg:"var(--jaune-bg)",
+    pente:"Vers la manipulation douce : on flatte ou on plaisante pour obtenir, sans jamais demander franchement.",
+    phrase:"« Toi qui es toujours si efficace, tu pourrais peut-être… »",
+    force:"Vous créez du lien et vous embarquez les autres. Votre chaleur rend le message audible.",
+    piege:{i:2, t:"Votre demande se noie dans l’enthousiasme : elle n’est ni précise ni datée, donc facile à esquiver."},
+    ajuster:"Terminez par une phrase simple et datée, répétez-la, puis laissez le silence faire son travail.",
+    attend:["De la relation avant le contenu","De l’enthousiasme et de la reconnaissance","Qu’on lui laisse la parole"],
+    reactions:["« Oh, je ne savais pas que ça te gênait ! »","« Mais tu sais que je suis toujours partant ! »","« On en parle autour d’un café ? »"],
+    adapt:["Un mot de relation, puis le fait.","Parler du lien : « je tiens à notre collaboration ».","Une demande claire, répétée, confirmée par écrit.","L’effet sur l’équipe et sur la relation."]
+  },
+  vert:{
+    nom:"Vert", trait:"stabilité", hex:"var(--vert)", bg:"var(--vert-bg)",
+    pente:"Vers la passivité : on encaisse, on s’adapte, et le malaise s’accumule en silence.",
+    phrase:"« Pas de souci, je m’en occupe… »",
+    force:"Vous écoutez, vous êtes constant et fiable. Les autres vous font confiance, ce qui donne du poids à vos limites.",
+    piege:{i:3, t:"Vous n’osez pas énoncer la conséquence ni poser une limite ferme, de peur de rompre l’équilibre."},
+    ajuster:"Autorisez-vous un « non » court, suivi d’une alternative concrète.",
+    attend:["De la sécurité : la relation n’est pas en danger","Du temps pour réfléchir","Des étapes claires et progressives"],
+    reactions:["« Je ne voudrais pas te mettre en difficulté. »","« Laisse-moi y réfléchir. » (puis silence)","« Si c’est mieux pour tout le monde… »"],
+    adapt:["Un ton posé, un cadre rassurant.","Dire que la relation n’est pas menacée.","Un délai, des étapes, une demande progressive.","Plus de stabilité et de sérénité pour tous."]
+  },
+  bleu:{
+    nom:"Bleu", trait:"conformité", hex:"var(--bleu)", bg:"var(--bleu-bg)",
+    pente:"Vers le retrait ou la sur-justification : on se replie, ou on constitue un dossier à charge.",
+    phrase:"« Comme indiqué dans mon mail du 12, c’est la troisième fois. »",
+    force:"Vous êtes précis et rigoureux. Vos faits sont solides, ce qui rend le Décrire très fiable.",
+    piege:{i:0, t:"Vous décrivez trop : dates, historique, pièces jointes. Le Décrire devient un réquisitoire et l’autre se défend."},
+    ajuster:"Gardez deux faits datés au maximum, puis passez au ressenti sans attendre.",
+    attend:["Des faits précis, datés, vérifiables","Une logique claire","Le temps de vérifier avant de répondre"],
+    reactions:["« Quels sont les faits exactement ? »","« Sur quelle base dis-tu ça ? »","« Je vais vérifier avant de te répondre. »"],
+    adapt:["Des faits précis, chiffrés, datés.","Sobre et factuel : « cela me pose problème parce que… ».","Des critères mesurables et un format attendu.","La fiabilité et la logique du résultat."]
+  }
+};
+
+const SITUATIONS = [
+  "Un collègue rend systématiquement ses éléments en retard et bloque votre travail.",
+  "Votre manager ajoute une tâche urgente alors que vous êtes déjà à saturation.",
+  "Un membre de l’équipe vous coupe régulièrement la parole en réunion.",
+  "Un client demande une modification hors périmètre en la présentant comme évidente.",
+  "Un collègue vous sollicite sans cesse pour des « petits services » qui ne relèvent pas de votre rôle.",
+  "En réunion, un collaborateur s’attribue le travail de toute l’équipe.",
+  "Vous apprenez au dernier moment un changement de planning qui vous concerne.",
+  "Un collègue vous envoie des messages tard le soir et attend une réponse immédiate.",
+  "Situation libre : l’émetteur choisit une situation réelle ou inventée."
+];
+
+const CRITERES = [
+  {court:"Faits",       texte:"Décrire : des faits observables, sans jugement"},
+  {court:"Ressenti",    texte:"Exprimer : un ressenti en « je », sans reproche"},
+  {court:"Demande",     texte:"Spécifier : une demande concrète et datée"},
+  {court:"Bénéfice",    texte:"Conséquences : un bénéfice positif évoqué"},
+  {court:"Adaptation",  texte:"Forme adaptée à la couleur du récepteur"},
+  {court:"Posture",     texte:"Posture assertive tenue du début à la fin"}
+];
+const NIVEAUX = ["Absent","Partiel","Net"];
+
+const DESC_MEMO = [
+  {t:"Décrire",    d:"Les faits, observables, sans jugement.", e:"« Les trois derniers dossiers me sont arrivés après 17 h. »"},
+  {t:"Exprimer",   d:"Mon ressenti ou l’effet sur moi, en « je ».", e:"« Je suis tendu, parce que je ne peux pas les relire sérieusement. »"},
+  {t:"Spécifier",  d:"Une demande concrète, mesurable, datée.", e:"« Peux-tu me les envoyer avant midi, à partir de lundi ? »"},
+  {t:"Conséquences", d:"Ce que chacun y gagne si la demande est acceptée.", e:"« Je te ferai mes retours le jour même, et on évitera les corrections de dernière minute. »"}
+];
+
+const POSTURES = [
+  {t:"Passive",       d:"Je m’efface. J’évite le conflit au prix de mes besoins."},
+  {t:"Agressive",     d:"J’impose. Je gagne au prix de la relation."},
+  {t:"Manipulatrice", d:"J’obtiens par des détours : flatterie, culpabilisation, sous-entendus."},
+  {t:"Assertive",     d:"Je m’affirme et je respecte l’autre : mes besoins et les siens comptent."}
+];
+
+/* ---------- État ---------- */
+const S = { pente:null, recv:null, sit:null, nTirage:0, grille:Array(CRITERES.length).fill(null),
+            sacSit:[], sacCoul:[], dernierCoul:null };
+const $ = id => document.getElementById(id);
+const aleatoire = t => t[Math.floor(Math.random()*t.length)];
+function melanger(t){ const a=t.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+
+/* ---------- Navigation ---------- */
+document.querySelectorAll(".nav button").forEach(b=>{
+  b.addEventListener("click",()=>{
+    document.querySelectorAll(".nav button").forEach(x=>x.removeAttribute("aria-current"));
+    b.setAttribute("aria-current","page");
+    document.querySelectorAll(".vue").forEach(v=>v.hidden = (v.id !== "v-"+b.dataset.vue));
+    window.scrollTo(0,0);
+  });
+});
+
+/* ---------- 1. Ma pente ---------- */
+function dessinerTuiles(){
+  $("tuiles").innerHTML = ORDRE.map(k=>{
+    const c=COUL[k];
+    return `<button class="tuile ${k}" style="--c:${c.hex}" data-k="${k}" aria-pressed="${S.pente===k}">
+      <span class="nom">${c.nom}</span><span class="sous">${c.trait}</span></button>`;
+  }).join("");
+  $("tuiles").classList.toggle("choisi", !!S.pente);
+  $("tuiles").querySelectorAll(".tuile").forEach(b=>b.addEventListener("click",()=>{ S.pente=b.dataset.k; dessinerTuiles(); dessinerPente(); }));
+  nb($("tuiles"));
+}
+function dessinerPente(){
+  const k=S.pente; if(!k){ return; }
+  const c=COUL[k];
+  $("carte-pente").innerHTML = `
+    <article class="carte" style="--c:${c.hex};--cbg:${c.bg}">
+      <h3>${c.nom}, ${c.trait}</h3>
+      <h4>Ma pente sous tension</h4>
+      <p>${c.pente}</p>
+      <blockquote>${c.phrase}</blockquote>
+      <h4>Ma force assertive</h4>
+      <p>${c.force}</p>
+      <h4>Mon piège dans le DESC</h4>
+      <ul class="etapes" aria-label="Les quatre temps du DESC">
+        ${ETAPES.map((e,i)=>`<li class="${i===c.piege.i?"piege "+k:""}">${e}</li>`).join("")}
+      </ul>
+      <p>${c.piege.t}</p>
+      <h4>Pour m’ajuster</h4>
+      <p>${c.ajuster}</p>
+    </article>`;
+  $("champ-note").hidden = false;
+  nb($("carte-pente")); 
+}
+
+/* ---------- 2. Tirage ---------- */
+function tirerSituation(){
+  if(!S.sacSit.length) S.sacSit = melanger(SITUATIONS.slice(0,-1)).concat([]);
+  if(S.nTirage>0 && S.nTirage%4===3) return SITUATIONS[SITUATIONS.length-1]; // une situation libre de temps en temps
+  return S.sacSit.pop();
+}
+function tirerCouleur(){
+  if(!S.sacCoul.length){
+    let sac = melanger(ORDRE);
+    if(sac[sac.length-1]===S.dernierCoul) sac.reverse();
+    S.sacCoul = sac;
+  }
+  const k = S.sacCoul.pop(); S.dernierCoul = k; return k;
+}
+function dessinerTirage(){
+  if(!S.sit){ return; }
+  const c = COUL[S.recv];
+  $("resultat").innerHTML = `
+    <div class="situation"><h3>Tirage ${S.nTirage}, la situation</h3><p>${S.sit}</p></div>
+    <article class="carte recepteur" style="--c:${c.hex}">
+      <h3>Le récepteur joue : ${c.nom} <small>(${c.trait})</small></h3>
+      <h4>Ce qu’il attend</h4>
+      <ul>${c.attend.map(x=>`<li>${x}</li>`).join("")}</ul>
+      <h4>Ses réactions types</h4>
+      <ul>${c.reactions.map(x=>`<li>${x}</li>`).join("")}</ul>
+    </article>`;
+  $("btn-couleur").disabled = false;
+  nb($("resultat"));
+}
+$("btn-tirer").addEventListener("click",()=>{
+  S.nTirage++;
+  S.sit = tirerSituation();
+  S.recv = tirerCouleur();
+  dessinerTirage(); dessinerCouleurJouee(); remettreGrille(); minuteurReset();
+});
+$("btn-couleur").addEventListener("click",()=>{
+  S.recv = tirerCouleur(); dessinerTirage(); dessinerCouleurJouee(); dessinerRadar();
+});
+
+/* ---------- Minuteur ---------- */
+const PHASES = [{n:"Jeu de rôle",s:240},{n:"Retour à trois voix",s:120},{n:"Changement de rôles",s:60}];
+let ph=0, reste=PHASES[0].s, enCours=false, finT=0, tic=null, audioCtx=null;
+const mmss = s => Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+function majMinuteur(fini){
+  $("phase").textContent = fini ? "Round terminé" : PHASES[ph].n;
+  $("temps").textContent = fini ? "0:00" : mmss(reste);
+  $("progres").style.width = fini ? "100%" : (100*(PHASES[ph].s-reste)/PHASES[ph].s)+"%";
+  $("minuteur").classList.toggle("fin", !!fini);
+  $("btn-depart").textContent = enCours ? "Pause" : (reste<PHASES[ph].s ? "Reprendre" : "Démarrer");
+  nb($("minuteur"));
+}
+function signal(){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.frequency.value=880; g.gain.value=.15; o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime+.35);
+  }catch(e){}
+  if(navigator.vibrate) navigator.vibrate([250,100,250]);
+}
+function pas(){
+  reste = Math.max(0, Math.ceil((finT-Date.now())/1000));
+  if(reste===0){
+    signal(); ph++;
+    if(ph>=PHASES.length){ clearInterval(tic); enCours=false; ph=PHASES.length-1; majMinuteur(true); return; }
+    reste = PHASES[ph].s; finT = Date.now()+reste*1000;
+  }
+  majMinuteur();
+}
+$("btn-depart").addEventListener("click",()=>{
+  if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  if(enCours){ clearInterval(tic); enCours=false; majMinuteur(); return; }
+  if($("minuteur").classList.contains("fin")){ minuteurReset(); }
+  finT = Date.now()+reste*1000; enCours=true; tic=setInterval(pas,250); majMinuteur();
+});
+function minuteurReset(){ clearInterval(tic); enCours=false; ph=0; reste=PHASES[0].s; majMinuteur(); }
+$("btn-reset").addEventListener("click",minuteurReset);
+
+/* ---------- 3. Observer ---------- */
+function dessinerCouleurJouee(){
+  $("couleur-jouee").innerHTML = ORDRE.map(k=>`<button type="button" class="puce ${k}" style="--c:${COUL[k].hex}" data-k="${k}" aria-pressed="${S.recv===k}">${COUL[k].nom}</button>`).join("");
+  $("couleur-jouee").querySelectorAll(".puce").forEach(b=>b.addEventListener("click",()=>{ S.recv=b.dataset.k; dessinerCouleurJouee(); dessinerRadar(); if(S.sit) dessinerTirage(); }));
+}
+function dessinerGrille(){
+  $("grille").innerHTML = CRITERES.map((c,i)=>`
+    <fieldset class="critere">
+      <legend>${c.texte}</legend>
+      <div class="segments">
+        ${NIVEAUX.map((n,v)=>`<input type="radio" name="c${i}" id="c${i}-${v}" value="${v}" ${S.grille[i]===v?"checked":""}><label for="c${i}-${v}">${n}</label>`).join("")}
+      </div>
+    </fieldset>`).join("");
+  $("grille").querySelectorAll("input").forEach(inp=>inp.addEventListener("change",()=>{
+    const i = Number(inp.name.slice(1)); S.grille[i]=Number(inp.value); dessinerRadar();
+  }));
+  nb($("grille"));
+}
+function remettreGrille(){ S.grille.fill(null); dessinerGrille(); dessinerRadar(); }
+function dessinerRadar(){
+  const cx=180, cy=160, R=95, n=CRITERES.length;
+  const ang=i=>-Math.PI/2+i*2*Math.PI/n;
+  const pt=(i,v,r=R)=>[cx+r*(v/2)*Math.cos(ang(i)), cy+r*(v/2)*Math.sin(ang(i))];
+  const poly=v=>CRITERES.map((_,i)=>pt(i,v).map(x=>x.toFixed(1)).join(",")).join(" ");
+  const valeurs=S.grille.map(v=>v===null?0:v);
+  const donnees=valeurs.map((v,i)=>pt(i,v).map(x=>x.toFixed(1)).join(",")).join(" ");
+  const col = S.recv ? COUL[S.recv].hex : "var(--encre)";
+  const etiq = CRITERES.map((c,i)=>{
+    const a=ang(i), x=cx+(R+16)*Math.cos(a), y=cy+(R+16)*Math.sin(a);
+    const ancre = Math.cos(a)>.3 ? "start" : (Math.cos(a)<-.3 ? "end" : "middle");
+    return `<text x="${x.toFixed(1)}" y="${(y+5).toFixed(1)}" text-anchor="${ancre}" font-size="15" fill="#1B2430" font-family="Atkinson Hyperlegible, sans-serif">${c.court}</text>`;
+  }).join("");
+  const axes = CRITERES.map((_,i)=>{ const [x,y]=pt(i,2); return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#D3D9E1"/>`; }).join("");
+  const points = valeurs.map((v,i)=>{ const [x,y]=pt(i,v); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5" fill="${col}" stroke="#fff" stroke-width="1.5"/>`; }).join("");
+  $("radar").innerHTML = `<svg viewBox="0 0 360 320" role="img" aria-label="Graphique radar de la grille d’observation">
+    <polygon points="${poly(1)}" fill="none" stroke="#D3D9E1"/>
+    <polygon points="${poly(2)}" fill="none" stroke="#B5BDC9"/>
+    ${axes}
+    <polygon points="${donnees}" fill="${col}" fill-opacity=".28" stroke="${col}" stroke-width="2.5" stroke-linejoin="round"/>
+    ${points}${etiq}</svg>`;
+  bilan();
+}
+function bilan(){
+  const manque = S.grille.filter(v=>v===null).length;
+  const el = $("bilan");
+  if(manque){ el.textContent = manque===S.grille.length ? "" : `Il reste ${manque} critère${manque>1?"s":""} à évaluer.`; nb(el); return; }
+  const total = S.grille.reduce((a,b)=>a+b,0);
+  const max = Math.max(...S.grille), min = Math.min(...S.grille);
+  let txt = `Total : ${total} sur 12.`;
+  if(max!==min){
+    txt += ` Point fort : ${CRITERES[S.grille.indexOf(max)].court}. À travailler : ${CRITERES[S.grille.indexOf(min)].court}.`;
+  } else { txt += " Profil homogène : cherchez ensemble un seul point à ajuster."; }
+  el.textContent = txt; nb(el);
+}
+$("btn-grille").addEventListener("click",remettreGrille);
+
+/* ---------- 4. Mémo ---------- */
+function dessinerMemo(){
+  $("memo-desc").innerHTML = DESC_MEMO.map((e,i)=>`
+    <div class="etape-desc"><span class="pastille" aria-hidden="true">${i+1}</span>
+      <h3>${e.t}</h3><p>${e.d}</p><p class="ex">${e.e}</p></div>`).join("");
+  $("memo-couleurs").innerHTML = ORDRE.map(k=>{
+    const c=COUL[k];
+    return `<details style="--c:${c.hex}"><summary>Parler à un profil ${c.nom.toLowerCase()} (${c.trait})</summary>
+      <div><dl>${ETAPES.map((e,i)=>`<dt>${e}</dt><dd>${c.adapt[i]}</dd>`).join("")}</dl></div></details>`;
+  }).join("");
+  $("memo-postures").innerHTML = POSTURES.map(p=>`
+    <details><summary>${p.t}</summary><div><p>${p.d}</p></div></details>`).join("");
+  nb($("memo-desc")); nb($("memo-couleurs")); nb($("memo-postures"));
+}
+
+/* ---------- Démarrage ---------- */
+dessinerTuiles(); dessinerCouleurJouee(); dessinerGrille(); dessinerRadar(); dessinerMemo(); majMinuteur();
+nb(document.querySelector("header")); nb(document.querySelector("main"));
+</script>
+</body>
+</html>
